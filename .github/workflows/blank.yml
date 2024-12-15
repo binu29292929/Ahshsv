@@ -11,14 +11,21 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Step 1: Checkout the latest code from the repository
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # Step 2: Set up SSH key for access to the VPS
       - name: Set up SSH
         uses: webfactory/ssh-agent@v0.5.3
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
+      # Step 3: SSH into the VPS and deploy the code
       - name: Deploy to VPS
         run: |
+          # Add the VPS's SSH fingerprint to the known hosts (Optional but recommended)
+          ssh-keyscan -H your_vps_ip >> ~/.ssh/known_hosts
+
+          # SSH into the VPS, navigate to the project directory, pull changes, and run the deploy script
           ssh -o StrictHostKeyChecking=no user@your_vps_ip "cd /path/to/your/project && git pull origin main && ./deploy_script.sh"
