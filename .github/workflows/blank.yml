@@ -21,11 +21,19 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      # Step 3: SSH into the VPS and deploy the code
-      - name: Deploy to VPS
+      # Step 3: Ensure SSH key is available and print debug info
+      - name: Debug SSH Key
         run: |
-          # Add the VPS's SSH fingerprint to the known hosts (Optional but recommended)
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > private_key.pem
+          chmod 600 private_key.pem
+          cat private_key.pem
+
+      # Step 4: Add the VPS's SSH fingerprint to the known hosts
+      - name: Add VPS to known hosts
+        run: |
           ssh-keyscan -H your_vps_ip >> ~/.ssh/known_hosts
 
-          # SSH into the VPS, navigate to the project directory, pull changes, and run the deploy script
-          ssh -o StrictHostKeyChecking=no user@your_vps_ip "cd /path/to/your/project && git pull origin main && ./deploy_script.sh"
+      # Step 5: Deploy to VPS
+      - name: Deploy to VPS
+        run: |
+          ssh -o StrictHostKeyChecking=no -i private_key.pem user@your_vps_ip "cd /path/to/your/project && git pull origin main && ./deploy_script.sh"
